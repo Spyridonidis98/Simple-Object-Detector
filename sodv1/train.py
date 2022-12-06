@@ -14,7 +14,7 @@ dataset = VOCDataset(images_path, labels_path, 7, 20, transform=transform)
 
 X = []
 Y = []
-for i in range(160):
+for i in range(1600):
     image, labels_matrix = dataset[i]
     X.append(image)
     Y.append(labels_matrix)
