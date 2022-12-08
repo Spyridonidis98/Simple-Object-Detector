@@ -15,14 +15,14 @@ dataset = VOCDataset(images_path, labels_path, 7, 20, transform=transform)
 X = []
 Y = []
 for i in range(1600):
-    image, labels_matrix = dataset[i]
+    image, cell_bboxes = dataset[i]
     X.append(image)
-    Y.append(labels_matrix)
+    Y.append(cell_bboxes)
 X = np.array(X)
 Y = np.array(Y)
 
 model = SODv1((448,448,3), 7, 20)
 model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate = 0.0001), loss = my_loss_v3)
-model.fit(X, Y, batch_size = 16, epochs =180, verbose = 1)
-model.save("./SODv1")
+model.fit(X, Y, batch_size = 32, epochs = 100, verbose = 1)
+#model.save("./SODv1")
 

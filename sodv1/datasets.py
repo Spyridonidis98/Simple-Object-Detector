@@ -67,6 +67,9 @@ class VOCDataset:
         image = np.asarray(image, dtype=np.uint8)
         return image, cell_bboxes
 
+    def __call__(self, index):
+        return self.__getitem__(index)
+
 class ImageTransform:
     def __init__(self, transforms) -> None:
         self.transforms = transforms
