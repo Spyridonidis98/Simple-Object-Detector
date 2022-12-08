@@ -5,7 +5,5 @@ from datasets import ImageTransform, VOCDataset
 import os  
 import time
 
-print(1/2+1)
-
-
-
+a = np.array([0,0,1,0,0])
+print(np.argmax(a))
