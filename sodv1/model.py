@@ -66,7 +66,3 @@ def SODv1(input_shape, S=15, C=20):
     model = Model(input, output, name="SODv1")
     return model
 
-
-
-
-    

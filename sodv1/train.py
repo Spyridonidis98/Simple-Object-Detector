@@ -5,8 +5,8 @@ import numpy as np
 from losses import my_loss_v3
 tf.keras.mixed_precision.set_global_policy('mixed_float16')
 
-images_path = "../../datasets/voc2012/images"
-labels_path = "../../datasets/voc2012/labels"
+images_path = "../../../datasets/voc2012/images"
+labels_path = "../../../datasets/voc2012/labels"
 
 t1 = ImageTransform.image_resize((448,448))
 transform = ImageTransform([t1])
@@ -23,6 +23,6 @@ Y = np.array(Y)
 
 model = SODv1((448,448,3), 7, 20)
 model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate = 0.0001), loss = my_loss_v3)
-model.fit(X, Y, batch_size = 32, epochs = 120, verbose = 1)
+model.fit(X, Y, batch_size = 32, epochs = 40, verbose = 1)
 model.save("sodv1/model")
 
