@@ -86,7 +86,9 @@ def mAP(cell_bboxes_true, cell_bboxes_pred, iou_thresh_hold = 0.5, detection_thr
     TP = []
     FP = []
     DC = [] # detection confidence 
+    number_of_ground_throuths_for_cat = []
     for c in range(num_of_classes):
+        ground_truths_num = 0
         TP.append([])
         FP.append([])
         DC.append([])
@@ -101,9 +103,12 @@ def mAP(cell_bboxes_true, cell_bboxes_pred, iou_thresh_hold = 0.5, detection_thr
             for bbox in bboxes_true_of_image:
                 if bbox[-1] == c:
                     bboxes_true_of_image_for_cat.append(bbox)
+                    ground_truths_num+=1
+
             for bbox in bboxes_pred_of_image:
                 if bbox[-1] == c:
                     bboxes_pred_of_image_for_cat.append(bbox)
+            
             
             tp = np.zeros(len(bboxes_pred_of_image_for_cat))
             fp = np.zeros(len(bboxes_pred_of_image_for_cat))+1
@@ -115,7 +120,7 @@ def mAP(cell_bboxes_true, cell_bboxes_pred, iou_thresh_hold = 0.5, detection_thr
                 best_iou = -1 
                 best_iou_id = -1
                 for bbox_true_id, bbox_true in enumerate(bboxes_true_of_image_for_cat):
-                    iou = IOU(np.array([bbox_true]), np.array([bbox_pred]))
+                    iou = IOU(np.array([bbox_true]), np.array([bbox_pred]))[0]
                     if iou>best_iou:
                         best_iou = iou
                         best_iou_id = bbox_true_id
@@ -135,22 +140,78 @@ def mAP(cell_bboxes_true, cell_bboxes_pred, iou_thresh_hold = 0.5, detection_thr
                     best_detection = ground_truth_best_detections[best_detection_iou_id]
                     tp[best_detection[1]] = 1
                     fp[best_detection[1]] = 0
- 
+
+            
             TP[c].append(tp)
-            TP[c].append(fp)
+            FP[c].append(fp)
             DC[c].append(dc)
+        number_of_ground_throuths_for_cat.append(ground_truths_num)
+
+    #concatenate for each category 
+    for c in range(len(TP)):
+        l = TP[c]
+        TP[c] = np.concatenate(l, axis=0)
+    for c in range(len(FP)):   
+        l = FP[c]
+        FP[c] = np.concatenate(l, axis=0)
+    for c in range(len(DC)):
+        l = DC[c]
+        DC[c] = np.concatenate(l, axis=0)
+
+
+    #sort for each category based on DC
+    p = []
+    for l in DC:
+        p.append(np.flip(np.argsort(l), axis=0))
     
-    #to do 
-    print(TP)
-    print(FP)
-    print(DC)
-    # s = 0
-    # for b in bboxes_true:
-    #     for _ in b:
-    #         s+=1
-    # print(s)
-                
-                
+    for c, _ in enumerate(TP):
+        TP[c] = TP[c][p[c]]
+    for c, _ in enumerate(FP):
+        FP[c] = FP[c][p[c]]
+    for c, _ in enumerate(DC):
+        DC[c] = DC[c][p[c]]
+
+    #cumulative sum 
+    TP_cumsum = []
+    for c, _ in enumerate(TP):
+        TP_cumsum.append(np.cumsum(TP[c]))
+    
+    total_detections_cumsum = []
+    for c, _ in enumerate(TP):
+        total_detections_cumsum.append(np.cumsum(TP[c]+FP[c]))
+
+    recall_of_cat = []
+    precision_of_cat = []
+    
+    for c, _ in enumerate(TP_cumsum):
+        epsilon = 1e-4
+        recall = TP_cumsum[c]/(number_of_ground_throuths_for_cat[c]+epsilon)
+        precision = TP_cumsum[c]/(total_detections_cumsum[c]+epsilon)
+        recall_of_cat.append(recall)
+        precision_of_cat.append(precision)
+    
+
+    p = []
+    r = []
+    total_detections_for_cat = []
+    for c in precision_of_cat:
+        if len(c) == 0:
+            p.append(None)
+        else:
+            p.append(c[-1])
+    for c in recall_of_cat:
+        if len(c) == 0:
+            r.append(None)
+        else:
+            r.append(c[-1])
+    for c in total_detections_cumsum:
+        if len(c) == 0:
+            total_detections_for_cat.append(None)
+        else:
+            total_detections_for_cat.append(c[-1])
+    
+    return p, r, number_of_ground_throuths_for_cat, total_detections_for_cat
+
 def IOU(bboxes_true, bboxes_pred):
     """
     bbox numpy array shape(N,4): [[x,y,w,h], ...] 
