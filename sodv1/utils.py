@@ -86,7 +86,7 @@ def mAP(cell_bboxes_true, cell_bboxes_pred, iou_thresh_hold = 0.5, detection_thr
     TP = []
     FP = []
     DC = [] # detection confidence 
-    number_of_ground_throuths_for_cat = []
+    number_of_ground_truths_for_cat = []
     for c in range(num_of_classes):
         ground_truths_num = 0
         TP.append([])
@@ -145,7 +145,7 @@ def mAP(cell_bboxes_true, cell_bboxes_pred, iou_thresh_hold = 0.5, detection_thr
             TP[c].append(tp)
             FP[c].append(fp)
             DC[c].append(dc)
-        number_of_ground_throuths_for_cat.append(ground_truths_num)
+        number_of_ground_truths_for_cat.append(ground_truths_num)
 
     #concatenate for each category 
     for c in range(len(TP)):
@@ -185,7 +185,7 @@ def mAP(cell_bboxes_true, cell_bboxes_pred, iou_thresh_hold = 0.5, detection_thr
     
     for c, _ in enumerate(TP_cumsum):
         epsilon = 1e-4
-        recall = TP_cumsum[c]/(number_of_ground_throuths_for_cat[c]+epsilon)
+        recall = TP_cumsum[c]/(number_of_ground_truths_for_cat[c]+epsilon)
         precision = TP_cumsum[c]/(total_detections_cumsum[c]+epsilon)
         recall_of_cat.append(recall)
         precision_of_cat.append(precision)
@@ -210,7 +210,7 @@ def mAP(cell_bboxes_true, cell_bboxes_pred, iou_thresh_hold = 0.5, detection_thr
         else:
             total_detections_for_cat.append(c[-1])
     
-    return p, r, number_of_ground_throuths_for_cat, total_detections_for_cat
+    return p, r, number_of_ground_truths_for_cat, total_detections_for_cat
 
 def IOU(bboxes_true, bboxes_pred):
     """
